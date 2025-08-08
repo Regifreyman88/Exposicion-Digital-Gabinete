@@ -21,7 +21,6 @@ try:
     img_path = "portada_gabinete.jpg"
     img_base64 = get_img_as_base64(img_path)
 
-    # El f-string que causaba el error ahora está corregido y completo.
     page_bg_img_css = f"""
     <style>
     [data-testid="stAppViewContainer"] > .main {{
@@ -85,37 +84,7 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpM
 try:
     df = pd.read_csv(SHEET_URL)
 
-    # --- NOMBRES DE LAS COLUMNAS DE TU GOOGLE SHEET (AHORA CORREGIDOS) ---
+    # --- NOMBRES DE LAS COLUMNAS DE TU GOOGLE SHEET ---
     COL_CARRERA = "Carrera"
-    COL_TITULO = "Cuál es la metáfora central (El Nombre Secreto): Elige una metáfora que defina el alma de tu Gabinete."
-    COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
-    COL_IMG_URL = "Mi Gabinete"
-
-    # --- RENDERIZAR LA GALERÍA ---
-    num_columnas = 3
-    cols = st.columns(num_columnas)
-
-    for index, row in df.iterrows():
-        with cols[index % num_columnas]:
-            img_id = ""
-            # Verifica que el valor en la celda sea un texto antes de procesarlo
-            if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
-                img_id = row[COL_IMG_URL].split('=')[1]
-
-            # Obtenemos el nombre del autor de la columna "Carrera" o un texto por defecto
-            autor = row.get(COL_CARRERA, "Anónimo")
-
-            st.markdown(f"""
-            <div class="gift-container">
-                <p class="gift-title">{row[COL_TITULO]}</p>
-                <p class="gift-author">Presentado por: {autor}</p>
-                <img class="gift-img" src="https://drive.google.com/uc?id={img_id}" alt="{row[COL_TITULO]}">
-                <p class="gift-desc">{row[COL_DESC]}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-except KeyError as e:
-    st.error(f"Error de Columna: No se encontró la columna {e}. Por favor, verifica que el nombre de la columna en el código sea EXACTAMENTE igual al de tu Google Sheet.")
-except Exception as e:
-    st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
-    st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
+    
+    # El nombre de la columna
