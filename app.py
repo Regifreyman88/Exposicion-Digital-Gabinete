@@ -1,12 +1,3 @@
-Claro, ese error de sintaxis significa que el bloque try no tiene su correspondiente except para manejar los errores. Esto suele suceder por un problema al copiar y pegar el código.
-
-Aquí está el código completo con la estructura try...except corregida.
-
-Código Corregido
-Por favor, reemplaza todo el código de tu archivo con esta versión.
-
-Python
-
 import streamlit as st
 import pandas as pd
 import base64
@@ -125,9 +116,3 @@ except KeyError as e:
 except Exception as e:
     st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
     st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
-
-
-
-
-
-
