@@ -18,14 +18,15 @@ def get_img_as_base64(file):
 
 # --- CARGA DE LA IMAGEN Y DEFINICIÓN DEL CSS ---
 try:
-    # Asegúrate de que tu imagen de portada esté en la misma carpeta que este script
-    img_path = "portada_bitacora_con_imagen.png"
+    # Se ha corregido el nombre del archivo al que me indicaste.
+    img_path = "portada_gabinete.jpg"
+
     img_base64 = get_img_as_base64(img_path)
 
     page_bg_img_css = f"""
     <style>
     [data-testid="stAppViewContainer"] > .main {{
-        background-image: url("data:image/png;base64,{img_base64}");
+        background-image: url("data:image/jpeg;base64,{img_base64}");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -72,7 +73,7 @@ try:
     st.markdown(page_bg_img_css, unsafe_allow_html=True)
 
 except FileNotFoundError:
-    st.error("Error: No se encontró el archivo de la portada ('portada_bitacora_con_imagen.png'). Asegúrate de que esté en la misma carpeta que la aplicación.")
+    st.error(f"Error: No se encontró el archivo de la portada ('{img_path}'). Asegúrate de que el nombre en el código sea idéntico al del archivo subido y que esté en la misma carpeta.")
     st.stop()
 
 # --- TÍTULO DE LA EXPOSICIÓN ---
