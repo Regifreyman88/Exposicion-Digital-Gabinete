@@ -11,6 +11,7 @@ st.image("portada_gabinete.jpg")
 
 def connect_to_google_sheets():
     try:
+        # --- AQUÍ ESTABA EL ERROR, YA ESTÁ CORREGIDO ---
         creds_dict = {
             "type": st.secrets["gcp_type"], "project_id": st.secrets["gcp_project_id"],
             "private_key_id": st.secrets["gcp_private_key_id"], "private_key": st.secrets["gcp_private_key"],
