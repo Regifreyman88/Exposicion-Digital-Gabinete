@@ -18,9 +18,7 @@ def get_img_as_base64(file):
 
 # --- CARGA DE LA IMAGEN Y DEFINICIÓN DEL CSS ---
 try:
-    # Se ha corregido el nombre del archivo al que me indicaste.
     img_path = "portada_gabinete.jpg"
-
     img_base64 = get_img_as_base64(img_path)
 
     page_bg_img_css = f"""
@@ -61,56 +59,4 @@ try:
     .gift-author {{
         font-style: italic;
         color: #A0A0A0;
-        margin-bottom: 10px;
-    }}
-    .gift-img {{
-        width: 100%;
-        border-radius: 5px;
-        margin-bottom: 15px;
-    }}
-    </style>
-    """
-    st.markdown(page_bg_img_css, unsafe_allow_html=True)
-
-except FileNotFoundError:
-    st.error(f"Error: No se encontró el archivo de la portada ('{img_path}'). Asegúrate de que el nombre en el código sea idéntico al del archivo subido y que esté en la misma carpeta.")
-    st.stop()
-
-# --- TÍTULO DE LA EXPOSICIÓN ---
-st.title("Bitácora del Asombro")
-st.markdown("<h3 style='text-align: center; color: #E0E0E0; font-family: Courier New, monospace;'>Archivo de regalos simbólicos ofrecidos al Asombro en tránsito</h3><br>", unsafe_allow_html=True)
-
-# --- CARGAR LOS DATOS DESDE GOOGLE SHEETS ---
-SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpMDrF2NKYVwyliJhhXd6vduGnbmIoggbL7KOyJkaxIKh5AUcJM9sxzBExOgnHX/pub?gid=562854143&single=true&output=csv"
-
-try:
-    df = pd.read_csv(SHEET_URL)
-
-    # Nombres de las columnas de tu Google Sheet (¡deben ser exactos!)
-    COL_AUTOR = "Tu nombre de detective"
-    COL_TITULO = "Título de tu regalo simbólico"
-    COL_DESC = "Breve descripción de tu regalo simbólico (extensión máxima de 280 caracteres)"
-    COL_IMG_URL = "Sube aquí la imagen que representa tu regalo simbólico (puede ser una foto de un objeto, un dibujo, un collage, etc.)"
-
-    # --- RENDERIZAR LA GALERÍA ---
-    num_columnas = 3
-    cols = st.columns(num_columnas)
-
-    for index, row in df.iterrows():
-        with cols[index % num_columnas]:
-            img_id = ""
-            if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
-                img_id = row[COL_IMG_URL].split('=')[1]
-
-            st.markdown(f"""
-            <div class="gift-container">
-                <p class="gift-title">{row[COL_TITULO]}</p>
-                <p class="gift-author">Evidencia presentada por: {row[COL_AUTOR]}</p>
-                <img class="gift-img" src="https://drive.google.com/uc?id={img_id}" alt="{row[COL_TITULO]}">
-                <p class="gift-desc">{row[COL_DESC]}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-except Exception as e:
-    st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
-    st.warning("Verifica que el enlace del Google Sheet sea correcto y que los nombres de las columnas en el código coincidan con los del archivo.")
+        margin-
