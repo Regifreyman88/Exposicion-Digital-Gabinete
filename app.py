@@ -1,3 +1,12 @@
+Claro, ese error de sintaxis significa que el bloque try no tiene su correspondiente except para manejar los errores. Esto suele suceder por un problema al copiar y pegar el código.
+
+Aquí está el código completo con la estructura try...except corregida.
+
+Código Corregido
+Por favor, reemplaza todo el código de tu archivo con esta versión.
+
+Python
+
 import streamlit as st
 import pandas as pd
 import base64
@@ -86,5 +95,39 @@ try:
 
     # --- NOMBRES DE LAS COLUMNAS DE TU GOOGLE SHEET ---
     COL_CARRERA = "Carrera"
-    
-    # El nombre de la columna
+    COL_TITULO = "Cuál es la metáfora central (El Nombre Secreto): Elige una metáfora que defina el alma de tu Gabinete."
+    COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
+    COL_IMG_URL = "Mi Gabinete"
+
+    # --- RENDERIZAR LA GALERÍA ---
+    num_columnas = 3
+    cols = st.columns(num_columnas)
+
+    for index, row in df.iterrows():
+        with cols[index % num_columnas]:
+            img_id = ""
+            if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
+                img_id = row[COL_IMG_URL].split('=')[1]
+
+            autor = row.get(COL_CARRERA, "Anónimo")
+
+            st.markdown(f"""
+            <div class="gift-container">
+                <p class="gift-title">{row[COL_TITULO]}</p>
+                <p class="gift-author">Presentado por: {autor}</p>
+                <img class="gift-img" src="https://drive.google.com/uc?id={img_id}" alt="{row[COL_TITULO]}">
+                <p class="gift-desc">{row[COL_DESC]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+except KeyError as e:
+    st.error(f"Error de Columna: No se encontró la columna {e}. Por favor, verifica que el nombre de la columna en el código sea EXACTAMENTE igual al de tu Google Sheet.")
+except Exception as e:
+    st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
+    st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
+
+
+
+
+
+
