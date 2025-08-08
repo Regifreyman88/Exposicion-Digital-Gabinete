@@ -1,85 +1,50 @@
 import streamlit as st
+import pandas as pd
+import base64  # Necesario para poner tu imagen de fondo
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
-    page_title="Gabinete de Curiosidades",
-    page_icon="🖼️",
-    layout="wide" # Usa el ancho completo de la página
+    page_title="Bitácora del Asombro",
+    page_icon=" Mysteries",  # Un emoji que encaja con el tema
+    layout="wide"
 )
 
-st.title("Gabinete de Curiosidades Digital 🏛️")
-st.write("Una colección de maravillas visuales y conceptuales.")
+# --- FUNCIÓN PARA CARGAR LA IMAGEN DE FONDO ---
+# Esta función convierte tu imagen en un formato que CSS puede usar
+@st.cache_data  # Esto hace que la imagen se cargue solo una vez
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-# --- TU LISTA DE OBRAS (Imágenes y textos) ---
-# Sustituye esto con tus propias imágenes y textos
-obras = [
-    {"img": "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=2574&auto=format&fit=crop", "titulo": "Florero Abstracto", "autor": "Artista Ficticio 1", "desc": "Una exploración del color y la forma en la naturaleza muerta."},
-    {"img": "https://images.unsplash.com/photo-1536924940846-227afb31e2a5?q=80&w=2666&auto=format&fit=crop", "titulo": "Nebulosa Cósmica", "autor": "Artista Ficticio 2", "desc": "El universo capturado en un lienzo digital, mostrando la belleza del caos."},
-    {"img": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=2670&auto=format&fit=crop", "titulo": "Paisaje Onírico", "autor": "Artista Ficticio 3", "desc": "Un paisaje que difumina la línea entre la realidad y los sueños."},
-    {"img": "https://images.unsplash.com/photo-1552083974-186346191183?q=80&w=2670&auto=format&fit=crop", "titulo": "El Ojo del Bosque", "autor": "Artista Ficticio 4", "desc": "La naturaleza nos observa a través de esta composición serena y misteriosa."},
-    {"img": "https://images.unsplash.com/photo-1578301978018-3005759f48f7?q=80&w=2572&auto=format&fit=crop", "titulo": "Escultura de Luz", "autor": "Artista Ficticio 5", "desc": "Formas geométricas que cobran vida a través de la interacción con la luz."},
-    {"img": "https://images.unsplash.com/photo-1506806732259-39c2d0268443?q=80&w=2574&auto=format&fit=crop", "titulo": "Retrato Fragmentado", "autor": "Artista Ficticio 6", "desc": "Una deconstrucción de la identidad a través de fragmentos visuales."}
-]
+# --- CARGA DE LA IMAGEN DE PORTADA ---
+# ASEGÚRATE DE QUE EL ARCHIVO 'portada_bitacora_con_imagen.png'
+# ESTÉ EN LA MISMA CARPETA QUE ESTE SCRIPT.
+try:
+    img = get_img_as_base64("portada_bitacora_con_imagen.png")
+    # --- INYECTAR CSS CON TU TEMA ---
+    # Aquí está la magia del diseño. Usamos los colores y la sensación de tu portada.
+    page_bg_img = f"""
+    <style>
+    [data-testid="stAppViewContainer"] > .main {{
+        background-image: url("data:image/png;base64,{img}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
 
-# --- INYECTAR CSS PARA EL ESTILO ---
-# Este es el truco para hacerla "vistosa"
-st.markdown("""
-<style>
-    /* Contenedor de cada imagen para darle un marco y sombra */
-    .img-container {
+    [data-testid="stHeader"] {{
+        background-color: rgba(0,0,0,0);
+    }}
+
+    /* Estilo para el contenedor de cada "regalo" */
+    .gift-container {{
+        border: 2px solid #5a7a9a; /* Un borde con el color azul de la portada */
         border-radius: 10px;
-        padding: 10px;
-        background-color: #f0f2f6; /* Un fondo sutil */
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        background-color: rgba(12, 22, 37, 0.85); /* Fondo azul oscuro semi-transparente */
+        box-shadow: 0px 0px 15px 5px rgba(118, 202, 255, 0.3); /* Un brillo azul cian como el del interior del gabinete */
         transition: 0.3s;
-    }
-    .img-container:hover {
-        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.3);
-        transform: scale(1.03); /* Efecto de zoom al pasar el ratón */
-    }
-    /* Estilo para las imágenes dentro del contenedor */
-    .img-container img {
-        width: 100%;
-        border-radius: 5px;
-    }
-    /* Estilo para los títulos de las obras */
-    .work-title {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #333;
-        margin-top: 10px;
-    }
-    /* Estilo para el autor */
-    .work-author {
-        font-style: italic;
-        color: #666;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-# --- CREAR LA GALERÍA CON COLUMNAS ---
-# Definimos cuántas columnas queremos
-num_columnas = 3
-cols = st.columns(num_columnas)
-
-# Iteramos sobre las obras y las asignamos a una columna
-for i, obra in enumerate(obras):
-    col = cols[i % num_columnas]
-    with col:
-        # Usamos st.markdown para poder aplicar nuestras clases de CSS
-        st.markdown(f"""
-        <div class="img-container">
-            <img src="{obra['img']}" alt="{obra['titulo']}">
-            <p class="work-title">{obra['titulo']}</p>
-            <p class="work-author">{obra['autor']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # --- INTERACTIVIDAD: EL EXPANSOR ---
-        # Un botón para ver más detalles sin saturar la pantalla
-        with st.expander("Ver más detalles..."):
-            st.write(obra['desc'])
-
-st.markdown("---")
-st.write("Creado con mucho esfuerzo y un poco de ayuda.")
+        margin-bottom: 20px; /* Espacio entre los elementos de la galería */
+        height: 100%; /* Asegura que todos los contenedores en una fila tengan la misma altura */
