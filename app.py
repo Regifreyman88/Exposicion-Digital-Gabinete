@@ -6,10 +6,13 @@ from google.oauth2 import service_account
 st.set_page_config(layout="wide")
 st.title("🖼️ Exposición Digital de Gabinetes")
 
+# --- LÍNEA AÑADIDA PARA MOSTRAR LA IMAGEN DE PORTADA ---
+st.image("portada_gabinete.jpg")
+
 def connect_to_google_sheets():
     try:
         creds_dict = {
-            "type": st.secrets["gcp_type"], "project_id": st.secrets["gop_project_id"],
+            "type": st.secrets["gcp_type"], "project_id": st.secrets["gcp_project_id"],
             "private_key_id": st.secrets["gcp_private_key_id"], "private_key": st.secrets["gcp_private_key"],
             "client_email": st.secrets["gcp_client_email"], "client_id": st.secrets["gcp_client_id"],
             "auth_uri": st.secrets["gcp_auth_uri"], "token_uri": st.secrets["gcp_token_uri"],
