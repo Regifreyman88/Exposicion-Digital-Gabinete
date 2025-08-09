@@ -1,7 +1,2 @@
-streamlit
+streamlit-gsheets-connection
 pandas
-gspread
-google-auth-oauthlib
-google-api-python-client
-wordcloud
-matplotlib
