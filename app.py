@@ -47,7 +47,7 @@ try:
     .gallery-title {{
         font-size: 1.4em;
         font-weight: bold;
-        color: #FFD700; /* Color dorado para el título */
+        color: #FFD700;
         font-family: 'Georgia', serif;
     }}
     .gallery-author {{
@@ -83,3 +83,50 @@ st.markdown("<h3 style='text-align: center; color: #E0E0E0; font-family: Courier
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpMDrF2NKYVwyliJhhXd6vduGnbmIoggbL7KOyJkaxIKh5AUcJM9sxzBExOgnHX/pub?gid=562854143&single=true&output=csv"
 
 try:
+    # Esta sección ahora está correctamente indentada
+    df = pd.read_csv(SHEET_URL)
+    if df.empty:
+        st.error("Error Crítico: El archivo CSV leído desde Google Sheets está vacío.")
+        st.stop()
+
+    COL_NOMBRE = "Nombre"
+    COL_TITULO = "Titulo"
+    COL_IMAGEN_GABINETE = "ImagenGabinete"
+    COL_DESCRIPCION = "Descripcion"
+    COL_SOL_VERDAD = "SolVerdad"
+
+    decorative_images = [
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg/600px-Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/The_Persistence_of_Memory.jpg/640px-The_Persistence_of_Memory.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/The_Scream.jpg/499px-The_Scream.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Vermeer_-_The_Girl_With_The_Pearl_Earring.jpg/488px-Vermeer_-_The_Girl_With_The_Pearl_Earring.jpg",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/640px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"
+    ]
+
+    num_columnas = 3
+    cols = st.columns(num_columnas)
+
+    for index, row in df.iterrows():
+        col = cols[index % num_columnas]
+        with col:
+            gabinete_img_id = get_drive_id(row[COL_IMAGEN_GABINETE])
+            decorative_img_url = decorative_images[index % len(decorative_images)]
+
+            st.markdown(f"""
+            <div class="gallery-card">
+                <img src="{decorative_img_url}" class="decorative-img">
+                <p class="gallery-title">{row[COL_TITULO]}</p>
+                <p class="gallery-author">Presentado por: {row[COL_NOMBRE]}</p>
+                <img class="gallery-img" src="https://drive.google.com/uc?id={gabinete_img_id}" alt="{row[COL_TITULO]}">
+                <details>
+                    <summary>Ver más detalles</summary>
+                    <p><strong>Artefacto Central:</strong> {row.get(COL_DESCRIPCION, 'No disponible')}</p>
+                    <p><strong>El 'Sol' de la Verdad:</strong> {row.get(COL_SOL_VERDAD, 'No disponible')}</p>
+                </details>
+            </div>
+            """, unsafe_allow_html=True)
+
+except Exception as e:
+    st.error(f"Error al cargar o procesar los datos: {e}")
+    st.warning("Verifica que tu Google Sheet tenga las columnas con los nombres simplificados: 'Nombre', 'Titulo', 'ImagenGabinete', 'Descripcion', 'SolVerdad'.")
