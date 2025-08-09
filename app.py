@@ -83,8 +83,13 @@ st.markdown("<h3 style='text-align: center; color: #E0E0E0; font-family: Courier
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpMDrF2NKYVwyliJhhXd6vduGnbmIoggbL7KOyJkaxIKh5AUcJM9sxzBExOgnHX/pub?gid=562854143&single=true&output=csv"
 
 try:
-    # Esta sección ahora está correctamente indentada
     df = pd.read_csv(SHEET_URL)
+
+    # --- PASO DE DIAGNÓSTICO: MOSTRAR LOS NOMBRES DE COLUMNA REALES ---
+    st.write("Nombres de columna leídos desde el archivo:")
+    st.write(df.columns)
+    # --- FIN DEL PASO DE DIAGNÓSTICO ---
+
     if df.empty:
         st.error("Error Crítico: El archivo CSV leído desde Google Sheets está vacío.")
         st.stop()
