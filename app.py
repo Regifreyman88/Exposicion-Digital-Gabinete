@@ -57,8 +57,12 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpM
 try:
     df = pd.read_csv(SHEET_URL)
 
+    # --- PASO DE DIAGNÓSTICO: MOSTRAR LOS NOMBRES DE COLUMNA REALES ---
+    st.write("Nombres de columna leídos desde el archivo:")
+    st.write(df.columns)
+    # --- FIN DEL PASO DE DIAGNÓSTICO ---
+
     # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
-    # Asegúrate de que estos nombres coincidan con los que pusiste en tu Google Sheet
     COL_NOMBRE = "Nombre"
     COL_CARRERA = "Carrera"
     COL_IMAGEN_MUSEO = "ImagenMuseo"
@@ -68,7 +72,7 @@ try:
     COL_SALAS = "Salas"
     COL_DESCRIPCION = "Descripcion"
     COL_PITCH = "Pitch"
-    COL_IMAGEN_GABINETE = "ImagenGabinete"
+    COL_IMAGEN_GABINETE = "ImagenGabinete" # Este es el que causa el error.
 
     # --- RENDERIZAR LA GALERÍA DE PORTADAS ---
     num_columnas = 3
@@ -77,44 +81,32 @@ try:
     for index, row in df.iterrows():
         col = cols[index % num_columnas]
         
-        # Extraer IDs de Drive
         gabinete_img_id = get_drive_id(row[COL_IMAGEN_GABINETE])
         museo_img_id = get_drive_id(row[COL_IMAGEN_MUSEO])
         audio_id = get_drive_id(row[COL_AUDIO])
 
-        # Crear un expansor para cada gabinete
         with col:
             st.image(f"https://drive.google.com/uc?id={gabinete_img_id}", use_column_width=True, caption=row[COL_TITULO])
             with st.expander("Ver detalles de la colección"):
-                
-                # --- Contenido Detallado Dentro del Expansor ---
                 st.subheader(row[COL_TITULO])
                 st.caption(f"Presentado por: {row[COL_NOMBRE]} ({row[COL_CARRERA]})")
-
-                # Reproductor de Audio
                 if audio_id:
                     st.audio(f"https://drive.google.com/uc?id={audio_id}", format='audio/wav')
-
-                # Pestañas para organizar el texto
                 tab1, tab2, tab3 = st.tabs(["El Artefacto", "La Revelación", "Las Salas"])
-
                 with tab1:
                     st.write("**Descripción del Artefacto Central:**")
                     st.write(row[COL_DESCRIPCION])
                     if museo_img_id:
                         st.image(f"https://drive.google.com/uc?id={museo_img_id}", use_column_width=True, caption="Objeto del Museo")
-                
                 with tab2:
                     st.write("**El 'Sol' de la Verdad:**")
                     st.write(row[COL_SOL_VERDAD])
                     st.write("---")
                     st.write("**El Pitch:**")
                     st.write(row[COL_PITCH])
-                
                 with tab3:
                     st.write("**Las Salas del Gabinete:**")
                     st.write(row[COL_SALAS])
-
 
 except Exception as e:
     st.error(f"Error al cargar o procesar los datos: {e}")
