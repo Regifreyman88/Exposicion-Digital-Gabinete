@@ -83,20 +83,3 @@ st.markdown("<h3 style='text-align: center; color: #E0E0E0; font-family: Courier
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpMDrF2NKYVwyliJhhXd6vduGnbmIoggbL7KOyJkaxIKh5AUcJM9sxzBExOgnHX/pub?gid=562854143&single=true&output=csv"
 
 try:
-    df = pd.read_csv(SHEET_URL)
-    if df.empty:
-        st.error("Error Crítico: El archivo CSV leído desde Google Sheets está vacío.")
-        st.stop()
-
-    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
-    COL_NOMBRE = "Nombre"
-    COL_TITULO = "Titulo"
-    COL_IMAGEN_GABINETE = "ImagenGabinete"
-
-    # Lista de imágenes decorativas (pinturas famosas)
-    decorative_images = [
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg", # Mona Lisa
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg/600px-Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg", # Starry Night
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/The_Persistence_of_Memory.jpg/640px-The_Persistence_of_Memory.jpg", # The Persistence of Memory
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/The_Scream.jpg/499px-The_Scream.jpg", # The Scream
-        "
