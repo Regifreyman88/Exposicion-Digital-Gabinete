@@ -34,18 +34,13 @@ if img_base64:
         background-size: cover; background-position: center;
         background-repeat: no-repeat; background-attachment: fixed;
     }}
-    .gallery-card {{
-        border: 2px solid #777; border-radius: 10px; padding: 15px;
+    .entry-container {{
+        border: 2px solid #777;
+        border-radius: 10px;
+        padding: 25px;
         background-color: rgba(30, 30, 30, 0.9);
-        box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.1);
-        margin-bottom: 20px; height: 100%;
+        margin-bottom: 30px;
     }}
-    .gallery-title {{
-        font-size: 1.4em; font-weight: bold; color: #FFD700;
-        font-family: 'Georgia', serif;
-    }}
-    .gallery-author {{ font-style: italic; color: #CCCCCC; margin-bottom: 10px; }}
-    .gallery-img {{ width: 100%; border-radius: 5px; margin-bottom: 15px; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -71,51 +66,77 @@ def load_data():
 df = load_data()
 
 if not df.empty:
-    # Limpiamos los nombres de las columnas de espacios y caracteres invisibles
     df.columns = df.columns.str.strip()
-    
-    # --- VERIFICACIÓN FINAL DE COLUMNAS ---
-    required_columns = ["Nombre", "Titulo", "ImagenGabinete", "Descripcion"]
+
+    # --- NOMBRES DE COLUMNA ---
+    required_columns = ["Nombre", "Carrera", "Titulo", "ImagenGabinete", "Descripcion", "ImagenMuseo", "SolVerdad", "Audio", "Salas", "Pitch"]
     missing_columns = [col for col in required_columns if col not in df.columns]
-    
+
     if missing_columns:
         st.error(f"Error Crítico: Faltan las siguientes columnas en tu Google Sheet: {missing_columns}")
-        st.info(f"Por favor, renombra los encabezados en tu Google Sheet para que coincidan EXACTAMENTE con estos nombres. Columnas encontradas: {list(df.columns)}")
+        st.info(f"Por favor, renombra los encabezados en tu Google Sheet. Columnas encontradas: {list(df.columns)}")
         st.stop()
     
-    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
-    COL_NOMBRE = "Nombre"
-    COL_TITULO = "Titulo"
-    COL_IMAGEN_GABINETE = "ImagenGabinete"
-    COL_DESCRIPCION = "Descripcion"
-
-    # Filtrar filas donde el título y la imagen principal no están vacíos
-    df_filtered = df[(df[COL_TITULO] != "") & (df[COL_IMAGEN_GABINETE] != "")].copy()
+    df_filtered = df[(df["Titulo"] != "") & (df["ImagenGabinete"] != "")].copy()
 
     if df_filtered.empty:
         st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos.")
     else:
         st.markdown("---")
-        num_columnas = 3
-        cols = st.columns(num_columnas)
         
+        # --- RENDERIZAR CADA GABINETE COMO UNA FICHA COMPLETA ---
         for index, row in df_filtered.iterrows():
-            with cols[index % num_columnas]:
-                gabinete_img_id = get_drive_id(row.get(COL_IMAGEN_GABINETE, ""))
-                titulo = row.get(COL_TITULO, "Sin Título")
-                nombre = row.get(COL_NOMBRE, "Anónimo")
-                descripcion = row.get(COL_DESCRIPCION, "No disponible")
+            with st.container():
+                st.markdown('<div class="entry-container">', unsafe_allow_html=True)
+                
+                # Encabezado
+                st.header(row.get("Titulo", "Sin Título"))
+                st.caption(f"Evidencia presentada por: {row.get('Nombre', 'Anónimo')} ({row.get('Carrera', 'N/A')})")
+                st.markdown("---")
+                
+                # Columnas para imagen principal y artefacto
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("Mi Gabinete")
+                    gabinete_img_id = get_drive_id(row.get("ImagenGabinete", ""))
+                    if gabinete_img_id:
+                        st.image(f"https://drive.google.com/uc?id={gabinete_img_id}", use_column_width=True)
+                
+                with col2:
+                    st.subheader("El Artefacto Central")
+                    st.write(row.get("Descripcion", "No disponible"))
+                    
+                    st.subheader("Objeto del Museo")
+                    museo_img_id = get_drive_id(row.get("ImagenMuseo", ""))
+                    if museo_img_id:
+                        st.image(f"https://drive.google.com/uc?id={museo_img_id}", use_column_width=True)
 
-                st.markdown(f"""
-                <div class="gallery-card">
-                    <p class="gallery-title">{titulo}</p>
-                    <p class="gallery-author">Presentado por: {nombre}</p>
-                    <img class="gallery-img" src="https://drive.google.com/uc?id={gabinete_img_id}" alt="{titulo}">
-                    <details>
-                        <summary>Ver más detalles</summary>
-                        <p><strong>Artefacto Central:</strong> {descripcion}</p>
-                    </details>
-                </div>
-                """, unsafe_allow_html=True)
+                # Audio (si existe)
+                st.subheader("Paisaje Sonoro")
+                audio_id = get_drive_id(row.get("Audio", ""))
+                if audio_id:
+                    st.audio(f"https://drive.google.com/uc?id={audio_id}")
+                else:
+                    st.text("No se proporcionó audio.")
+                
+                st.markdown("---")
+                
+                # Pestañas para el resto de la información
+                tab1, tab2, tab3 = st.tabs(["💡 La Revelación", "🏛️ Las Salas", "📢 El Pitch"])
+
+                with tab1:
+                    st.subheader("El 'Sol' de la Verdad")
+                    st.write(row.get("SolVerdad", "No disponible"))
+
+                with tab2:
+                    st.subheader("Las Salas del Gabinete")
+                    st.write(row.get("Salas", "No disponible"))
+                    
+                with tab3:
+                    st.subheader("El Pitch")
+                    st.write(row.get("Pitch", "No disponible"))
+                
+                st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.warning("No se encontraron datos en la hoja de cálculo o hubo un error al cargar.")
