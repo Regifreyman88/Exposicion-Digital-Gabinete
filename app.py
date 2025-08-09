@@ -5,11 +5,7 @@ import gspread
 from gspread_dataframe import get_as_dataframe
 
 # --- CONFIGURACIÓN DE LA PÁGINA ---
-st.set_page_config(
-    page_title="Bitácora del Asombro",
-    page_icon="🖼️",
-    layout="wide"
-)
+st.set_page_config(page_title="Galería de Gabinetes", page_icon="🖼️", layout="wide")
 
 # --- FUNCIÓN PARA CARGAR LA IMAGEN DE FONDO ---
 @st.cache_data
@@ -19,7 +15,7 @@ def get_img_as_base64(file):
             data = f.read()
         return base64.b64encode(data).decode()
     except FileNotFoundError:
-        st.warning(f"Advertencia: No se encontró la imagen de fondo '{file}'. La página funcionará sin ella.")
+        st.warning(f"Advertencia: No se encontró la imagen de fondo '{file}'.")
         return None
 
 # --- FUNCIÓN PARA EXTRAER EL ID DE GOOGLE DRIVE ---
@@ -28,17 +24,16 @@ def get_drive_id(url):
         return url.split('=')[1]
     return ""
 
-# --- CARGA DE LA IMAGEN DE FONDO Y CSS ---
+# --- APLICAR ESTILOS Y FONDO ---
 img_base64 = get_img_as_base64("portada_gabinete.jpg")
 if img_base64:
-    page_bg_img_css = f"""
+    # CSS para el fondo y las tarjetas de la galería
+    st.markdown(f"""
     <style>
     [data-testid="stAppViewContainer"] > .main {{
         background-image: url("data:image/jpeg;base64,{img_base64}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
+        background-size: cover; background-position: center;
+        background-repeat: no-repeat; background-attachment: fixed;
     }}
     .gallery-card {{
         border: 2px solid #777; border-radius: 10px; padding: 15px;
@@ -53,47 +48,52 @@ if img_base64:
     .gallery-author {{ font-style: italic; color: #CCCCCC; margin-bottom: 10px; }}
     .gallery-img {{ width: 100%; border-radius: 5px; margin-bottom: 15px; }}
     </style>
-    """
-    st.markdown(page_bg_img_css, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# --- TÍTULO DE LA EXPOSICIÓN ---
+# --- TÍTULO ---
 st.title("Galería de Gabinetes")
 st.markdown("<h3 style='text-align: center; color: #E0E0E0;'>Archivo de regalos simbólicos</h3><br>", unsafe_allow_html=True)
 
-# --- FUNCIÓN PARA CONECTAR Y LEER GOOGLE SHEETS DE FORMA SEGURA ---
+# --- FUNCIÓN PARA CONECTAR Y LEER GOOGLE SHEETS ---
 @st.cache_data(ttl=60)
 def load_data():
     try:
-        creds_dict = st.secrets["connections"]["gcs"]
-        sa = gspread.service_account_from_dict(creds_dict)
+        # Usa los secretos directamente. st.secrets es un diccionario.
+        creds = dict(st.secrets)
+        sa = gspread.service_account_from_dict(creds)
         spreadsheet = sa.open_by_url("https://docs.google.com/spreadsheets/d/1mLZEeMS0mxOXcPjy83-AtoHyXJ1M1pKDoICjM8iy20s/edit")
         worksheet = spreadsheet.worksheet("Respuestas de formulario 1")
         df = get_as_dataframe(worksheet)
-        df.dropna(subset=["Titulo"], inplace=True) # Elimina filas si el título está vacío
+        
+        # Elimina filas donde el título está vacío para evitar errores
+        df.dropna(subset=["Titulo"], inplace=True)
         return df
+    except gspread.exceptions.SpreadsheetNotFound:
+        st.error("Error: No se encontró la hoja de cálculo. Asegúrate de que el enlace es correcto y que has compartido la hoja con el email de la cuenta de servicio.")
+        return pd.DataFrame()
     except Exception as e:
         st.error(f"No se pudo conectar o leer la hoja de cálculo: {e}")
         return pd.DataFrame()
 
-# --- CARGAR Y MOSTRAR LOS DATOS ---
+# --- CARGAR Y MOSTRAR DATOS ---
 df = load_data()
 
 if not df.empty:
-    # --- NOMBRES DE COLUMNAS SIMPLIFICADOS (VERIFICA QUE COINCIDAN CON TU HOJA) ---
+    # --- NOMBRES DE COLUMNA SIMPLIFICADOS (VERIFICA QUE COINCIDAN CON TU HOJA) ---
     COL_NOMBRE = "Nombre"
     COL_TITULO = "Titulo"
     COL_IMAGEN_GABINETE = "ImagenGabinete"
     COL_DESCRIPCION = "Descripcion"
-    COL_SOL_VERDAD = "SolVerdad"
 
     # --- RENDERIZAR LA GALERÍA ---
+    st.markdown("---")
     num_columnas = 3
     cols = st.columns(num_columnas)
-
+    
     for index, row in df.iterrows():
         with cols[index % num_columnas]:
             gabinete_img_id = get_drive_id(row.get(COL_IMAGEN_GABINETE, ""))
-
+            
             st.markdown(f"""
             <div class="gallery-card">
                 <p class="gallery-title">{row.get(COL_TITULO, "Sin Título")}</p>
@@ -102,7 +102,6 @@ if not df.empty:
                 <details>
                     <summary>Ver más detalles</summary>
                     <p><strong>Artefacto Central:</strong> {row.get(COL_DESCRIPCION, 'No disponible')}</p>
-                    <p><strong>El 'Sol' de la Verdad:</strong> {row.get(COL_SOL_VERDAD, 'No disponible')}</p>
                 </details>
             </div>
             """, unsafe_allow_html=True)
