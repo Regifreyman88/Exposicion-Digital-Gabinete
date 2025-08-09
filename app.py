@@ -1,15 +1,60 @@
-import streamlit as st
+  import streamlit as st
 import pandas as pd
+import base64
 import gspread
 from gspread_dataframe import get_as_dataframe
 
-st.set_page_config(page_title="Diagnóstico de Columnas", layout="wide")
+# --- CONFIGURACIÓN DE LA PÁGINA ---
+st.set_page_config(page_title="Galería de Gabinetes", page_icon="🖼️", layout="wide")
 
-st.title("Diagnóstico de la Conexión")
-st.write("Esta página intentará conectarse a tu Google Sheet y mostrar los nombres exactos de las columnas que está leyendo.")
+# --- FUNCIÓN PARA CARGAR LA IMAGEN DE FONDO ---
+@st.cache_data
+def get_img_as_base64(file):
+    try:
+        with open(file, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        st.warning(f"Advertencia: No se encontró la imagen de fondo '{file}'.")
+        return None
+
+# --- FUNCIÓN PARA EXTRAER EL ID DE GOOGLE DRIVE ---
+def get_drive_id(url):
+    if isinstance(url, str) and '=' in url:
+        return url.split('=')[1]
+    return ""
+
+# --- APLICAR ESTILOS Y FONDO ---
+img_base64 = get_img_as_base64("portada_gabinete.jpg")
+if img_base64:
+    st.markdown(f"""
+    <style>
+    [data-testid="stAppViewContainer"] > .main {{
+        background-image: url("data:image/jpeg;base64,{img_base64}");
+        background-size: cover; background-position: center;
+        background-repeat: no-repeat; background-attachment: fixed;
+    }}
+    .gallery-card {{
+        border: 2px solid #777; border-radius: 10px; padding: 15px;
+        background-color: rgba(30, 30, 30, 0.9);
+        box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px; height: 100%;
+    }}
+    .gallery-title {{
+        font-size: 1.4em; font-weight: bold; color: #FFD700;
+        font-family: 'Georgia', serif;
+    }}
+    .gallery-author {{ font-style: italic; color: #CCCCCC; margin-bottom: 10px; }}
+    .gallery-img {{ width: 100%; border-radius: 5px; margin-bottom: 15px; }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- TÍTULO ---
+st.title("Galería de Gabinetes")
+st.markdown("<h3 style='text-align: center; color: #E0E0E0;'>Archivo de regalos simbólicos</h3><br>", unsafe_allow_html=True)
 
 # --- FUNCIÓN PARA CONECTAR Y LEER GOOGLE SHEETS ---
-@st.cache_data(ttl=10) # Un cache corto para poder refrescar
+@st.cache_data(ttl=60)
 def load_data():
     try:
         creds = dict(st.secrets)
@@ -20,18 +65,39 @@ def load_data():
         return df
     except Exception as e:
         st.error(f"No se pudo conectar o leer la hoja de cálculo: {e}")
-        return None
+        return pd.DataFrame()
 
-# --- CARGAR Y MOSTRAR LOS NOMBRES DE LAS COLUMNAS ---
+# --- CARGAR Y MOSTRAR DATOS ---
 df = load_data()
 
-if df is not None:
-    if not df.empty:
-        st.success("¡Conexión exitosa! Se han leído los datos.")
-        st.write("A continuación, la lista de los nombres de columna EXACTOS que se encontraron en tu archivo. Por favor, copia esta lista y pégala en nuestra conversación.")
-        
-        # Imprime la lista de columnas para diagnóstico
-        st.code(f"Columnas encontradas: {list(df.columns)}")
-        
+if not df.empty:
+    # --- NOMBRES DE COLUMNA EXACTOS REVELADOS POR EL DIAGNÓSTICO ---
+    # Limpiamos los nombres de las columnas de espacios y saltos de línea
+    df.columns = df.columns.str.strip()
+
+    COL_NOMBRE = "Nombre"
+    COL_TITULO = "Titulo"
+    COL_IMAGEN_GABINETE = "ImagenGabinete"
+    COL_DESCRIPCION = "Descripcion"
+    
+    # Filtrar filas donde el título y la imagen principal no están vacíos
+    df_filtered = df[(df[COL_TITULO] != "") & (df[COL_IMAGEN_GABINETE] != "")].copy()
+
+    if df_filtered.empty:
+        st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos en la hoja de cálculo.")
     else:
-        st.error("La conexión fue exitosa, pero la hoja de cálculo parece estar vacía.")
+        st.markdown("---")
+        num_columnas = 3
+        cols = st.columns(num_columnas)
+        
+        for index, row in df_filtered.iterrows():
+            with cols[index % num_columnas]:
+                gabinete_img_id = get_drive_id(row.get(COL_IMAGEN_GABINETE, ""))
+                titulo = row.get(COL_TITULO, "Sin Título")
+                nombre = row.get(COL_NOMBRE, "Anónimo")
+                descripcion = row.get(COL_DESCRIPCION, "No disponible")
+
+                st.markdown(f"""
+                <div class="gallery-card">
+                    <p class="gallery-title">{titulo}</p>
+                    <p class="gallery-author">Presentado por:
