@@ -1,4 +1,5 @@
-import streamlit as st
+
+ import streamlit as st
 import pandas as pd
 import base64
 import gspread
@@ -59,44 +60,4 @@ def load_data():
     try:
         creds = dict(st.secrets)
         sa = gspread.service_account_from_dict(creds)
-        spreadsheet = sa.open_by_url("https://docs.google.com/spreadsheets/d/1mLZEeMS0mxOXcPjy83-AtoHyXJ1M1pKDoICjM8iy20s/edit")
-        worksheet = spreadsheet.worksheet("Respuestas de formulario 1")
-        df = get_as_dataframe(worksheet, keep_default_na=False)
-        return df
-    except Exception as e:
-        st.error(f"No se pudo conectar o leer la hoja de cálculo: {e}")
-        return pd.DataFrame()
-
-# --- CARGAR Y MOSTRAR DATOS ---
-df = load_data()
-
-if not df.empty:
-    # Limpiamos los nombres de las columnas de espacios y caracteres invisibles
-    df.columns = df.columns.str.strip()
-    
-    # --- VERIFICACIÓN FINAL DE COLUMNAS ---
-    required_columns = ["Nombre", "Titulo", "ImagenGabinete", "Descripcion"]
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    
-    if missing_columns:
-        st.error(f"Error Crítico: Faltan las siguientes columnas en tu Google Sheet: {missing_columns}")
-        st.info(f"Por favor, renombra los encabezados en tu Google Sheet para que coincidan EXACTAMENTE con estos nombres. Columnas encontradas: {list(df.columns)}")
-        st.stop()
-    
-    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
-    COL_NOMBRE = "Nombre"
-    COL_TITULO = "Titulo"
-    COL_IMAGEN_GABINETE = "ImagenGabinete"
-    COL_DESCRIPCION = "Descripcion"
-
-    # Filtrar filas donde el título y la imagen principal no están vacíos
-    df_filtered = df[(df[COL_TITULO] != "") & (df[COL_IMAGEN_GABINETE] != "")].copy()
-
-    if df_filtered.empty:
-        st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos.")
-    else:
-        st.markdown("---")
-        num_columnas = 3
-        cols = st.columns(num_columnas)
-        
-        for index, row in df_filtered.iterrows
+        spreadsheet =
