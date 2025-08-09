@@ -84,7 +84,7 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpM
 try:
     df = pd.read_csv(SHEET_URL)
 
-    # --- NOMBRES DE LAS COLUMNAS DE TU GOOGLE SHEET ---
+    # --- NOMBRES DE LAS COLUMNAS EXTRAÍDOS DE TU ARCHIVO CSV ---
     COL_CARRERA = "Carrera"
     COL_TITULO = "Cuál es la metáfora central (El Nombre Secreto): Elige una metáfora que defina el alma de tu Gabinete."
     COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
@@ -97,10 +97,12 @@ try:
     for index, row in df.iterrows():
         with cols[index % num_columnas]:
             img_id = ""
+            # Verifica que el valor en la celda sea un texto antes de procesarlo
             if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
                 img_id = row[COL_IMG_URL].split('=')[1]
 
-            autor = row.get(COL_CARRERA, "Anónimo")
+            # Obtenemos el nombre del autor de la columna "Carrera"
+            autor = row[COL_CARRERA]
 
             st.markdown(f"""
             <div class="gift-container">
@@ -112,7 +114,7 @@ try:
             """, unsafe_allow_html=True)
 
 except KeyError as e:
-    st.error(f"Error de Columna: No se encontró la columna {e}. Por favor, verifica que el nombre de la columna en el código sea EXACTAMENTE igual al de tu Google Sheet.")
+    st.error(f"Error de Columna: No se encontró la columna {e}. Esto significa que un encabezado en el código todavía no coincide con tu archivo CSV.")
 except Exception as e:
     st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
     st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
