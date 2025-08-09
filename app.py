@@ -16,14 +16,18 @@ def get_img_as_base64(file):
         data = f.read()
     return base64.b64encode(data).decode()
 
+# --- FUNCIÓN PARA EXTRAER EL ID DE GOOGLE DRIVE ---
+def get_drive_id(url):
+    if isinstance(url, str) and '=' in url:
+        return url.split('=')[1]
+    return ""
+
 # --- CARGA DE LA IMAGEN Y DEFINICIÓN DEL CSS ---
 try:
     img_path = "portada_gabinete.jpg"
     img_base64 = get_img_as_base64(img_path)
-
     page_bg_img_css = f"""
     <style>
-    /* ... (Todo el código CSS se mantiene igual) ... */
     [data-testid="stAppViewContainer"] > .main {{
         background-image: url("data:image/jpeg;base64,{img_base64}");
         background-size: cover;
@@ -31,48 +35,16 @@ try:
         background-repeat: no-repeat;
         background-attachment: fixed;
     }}
-    [data-testid="stHeader"] {{
-        background-color: rgba(0,0,0,0);
-    }}
-    .gift-container {{
-        border: 2px solid #5a7a9a;
-        border-radius: 10px;
-        padding: 15px;
-        background-color: rgba(12, 22, 37, 0.85);
-        box-shadow: 0px 0px 15px 5px rgba(118, 202, 255, 0.3);
-        transition: 0.3s;
-        margin-bottom: 20px;
-        height: 100%;
-    }}
-    .gift-container:hover {{
-        box-shadow: 0px 0px 20px 8px rgba(118, 202, 255, 0.5);
-        transform: scale(1.02);
-    }}
-    .gift-title, .gift-author, .gift-desc {{
-        font-family: 'Courier New', Courier, monospace;
-        color: #E0E0E0;
-    }}
-    .gift-title {{
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #76CAFF;
-    }}
-    .gift-author {{
-        font-style: italic;
-        color: #A0A0A0;
-        margin-bottom: 10px;
-    }}
-    .gift-img {{
+    .cover-image {{
         width: 100%;
-        border-radius: 5px;
-        margin-bottom: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     }}
     </style>
     """
     st.markdown(page_bg_img_css, unsafe_allow_html=True)
-
 except FileNotFoundError:
-    st.error(f"Error: No se encontró el archivo de la portada ('{img_path}'). Asegúrate de que el nombre en el código sea idéntico al del archivo subido y que esté en la misma carpeta.")
+    st.error(f"Error: No se encontró el archivo de la portada ('{img_path}').")
     st.stop()
 
 # --- TÍTULO DE LA EXPOSICIÓN ---
@@ -85,41 +57,65 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpM
 try:
     df = pd.read_csv(SHEET_URL)
 
-    # --- PASO DE DIAGNÓSTICO: MOSTRAR LOS NOMBRES DE COLUMNA REALES ---
-    st.write("Nombres de columna leídos desde el archivo:")
-    st.write(df.columns)
-    # --- FIN DEL PASO DE DIAGNÓSTICO ---
-
-
-    # --- NOMBRES DE LAS COLUMNAS DE TU ARCHIVO CSV ---
+    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
+    # Asegúrate de que estos nombres coincidan con los que pusiste en tu Google Sheet
+    COL_NOMBRE = "Nombre"
     COL_CARRERA = "Carrera"
-    COL_TITULO = "Metáfora central"  # Este es el que probablemente esté incorrecto
-    COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
-    COL_IMG_URL = "Mi Gabinete"
+    COL_IMAGEN_MUSEO = "ImagenMuseo"
+    COL_SOL_VERDAD = "SolVerdad"
+    COL_TITULO = "Titulo"
+    COL_AUDIO = "Audio"
+    COL_SALAS = "Salas"
+    COL_DESCRIPCION = "Descripcion"
+    COL_PITCH = "Pitch"
+    COL_IMAGEN_GABINETE = "ImagenGabinete"
 
-    # --- RENDERIZAR LA GALERÍA ---
+    # --- RENDERIZAR LA GALERÍA DE PORTADAS ---
     num_columnas = 3
     cols = st.columns(num_columnas)
 
     for index, row in df.iterrows():
-        with cols[index % num_columnas]:
-            img_id = ""
-            if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
-                img_id = row[COL_IMG_URL].split('=')[1]
+        col = cols[index % num_columnas]
+        
+        # Extraer IDs de Drive
+        gabinete_img_id = get_drive_id(row[COL_IMAGEN_GABINETE])
+        museo_img_id = get_drive_id(row[COL_IMAGEN_MUSEO])
+        audio_id = get_drive_id(row[COL_AUDIO])
 
-            autor = row[COL_CARRERA]
+        # Crear un expansor para cada gabinete
+        with col:
+            st.image(f"https://drive.google.com/uc?id={gabinete_img_id}", use_column_width=True, caption=row[COL_TITULO])
+            with st.expander("Ver detalles de la colección"):
+                
+                # --- Contenido Detallado Dentro del Expansor ---
+                st.subheader(row[COL_TITULO])
+                st.caption(f"Presentado por: {row[COL_NOMBRE]} ({row[COL_CARRERA]})")
 
-            st.markdown(f"""
-            <div class="gift-container">
-                <p class="gift-title">{row[COL_TITULO]}</p>
-                <p class="gift-author">Presentado por: {autor}</p>
-                <img class="gift-img" src="https://drive.google.com/uc?id={img_id}" alt="{row[COL_TITULO]}">
-                <p class="gift-desc">{row[COL_DESC]}</p>
-            </div>
-            """, unsafe_allow_html=True)
+                # Reproductor de Audio
+                if audio_id:
+                    st.audio(f"https://drive.google.com/uc?id={audio_id}", format='audio/wav')
 
-except KeyError as e:
-    st.error(f"Error de Columna: No se encontró la columna {e}. Revisa la lista de 'Nombres de columna leídos desde el archivo' que aparece arriba y copia el nombre correcto en el código.")
+                # Pestañas para organizar el texto
+                tab1, tab2, tab3 = st.tabs(["El Artefacto", "La Revelación", "Las Salas"])
+
+                with tab1:
+                    st.write("**Descripción del Artefacto Central:**")
+                    st.write(row[COL_DESCRIPCION])
+                    if museo_img_id:
+                        st.image(f"https://drive.google.com/uc?id={museo_img_id}", use_column_width=True, caption="Objeto del Museo")
+                
+                with tab2:
+                    st.write("**El 'Sol' de la Verdad:**")
+                    st.write(row[COL_SOL_VERDAD])
+                    st.write("---")
+                    st.write("**El Pitch:**")
+                    st.write(row[COL_PITCH])
+                
+                with tab3:
+                    st.write("**Las Salas del Gabinete:**")
+                    st.write(row[COL_SALAS])
+
+
 except Exception as e:
-    st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
-    st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
+    st.error(f"Error al cargar o procesar los datos: {e}")
+    st.warning("Verifica que el enlace de tu Google Sheet esté publicado como CSV y que los nombres de las columnas en el archivo coincidan con los del código.")
