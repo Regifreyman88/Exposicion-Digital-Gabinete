@@ -23,6 +23,7 @@ try:
 
     page_bg_img_css = f"""
     <style>
+    /* ... (Todo el código CSS se mantiene igual) ... */
     [data-testid="stAppViewContainer"] > .main {{
         background-image: url("data:image/jpeg;base64,{img_base64}");
         background-size: cover;
@@ -84,9 +85,15 @@ SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpM
 try:
     df = pd.read_csv(SHEET_URL)
 
+    # --- PASO DE DIAGNÓSTICO: MOSTRAR LOS NOMBRES DE COLUMNA REALES ---
+    st.write("Nombres de columna leídos desde el archivo:")
+    st.write(df.columns)
+    # --- FIN DEL PASO DE DIAGNÓSTICO ---
+
+
     # --- NOMBRES DE LAS COLUMNAS DE TU ARCHIVO CSV ---
     COL_CARRERA = "Carrera"
-    COL_TITULO = "Metáfora central"
+    COL_TITULO = "Metáfora central"  # Este es el que probablemente esté incorrecto
     COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
     COL_IMG_URL = "Mi Gabinete"
 
@@ -97,11 +104,9 @@ try:
     for index, row in df.iterrows():
         with cols[index % num_columnas]:
             img_id = ""
-            # Verifica que el valor en la celda sea un texto antes de procesarlo
             if isinstance(row[COL_IMG_URL], str) and '=' in row[COL_IMG_URL]:
                 img_id = row[COL_IMG_URL].split('=')[1]
 
-            # Obtenemos el nombre del autor de la columna "Carrera"
             autor = row[COL_CARRERA]
 
             st.markdown(f"""
@@ -114,9 +119,7 @@ try:
             """, unsafe_allow_html=True)
 
 except KeyError as e:
-    # Esta sección ahora está correctamente indentada
-    st.error(f"Error de Columna: No se encontró la columna {e}. Esto significa que un encabezado en el código todavía no coincide con tu archivo CSV.")
+    st.error(f"Error de Columna: No se encontró la columna {e}. Revisa la lista de 'Nombres de columna leídos desde el archivo' que aparece arriba y copia el nombre correcto en el código.")
 except Exception as e:
-    # Esta sección ahora está correctamente indentada
     st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
     st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
