@@ -52,7 +52,7 @@ st.markdown(f"""
     }}
     /* --- TÍTULOS Y TEXTOS DENTRO DE LA TARJETA --- */
     .gallery-card h3 {{
-        color: #76CAFF; /* Azul cian brillante */
+        color: #76CAFF;
         font-family: 'Georgia', serif;
         text-align: center;
         margin-bottom: 1rem;
@@ -72,20 +72,7 @@ st.markdown(f"""
         box-shadow: none !important;
     }}
     .stExpander header {{
-        color: #FFD700 !important; /* Dorado */
+        color: #FFD700 !important;
     }}
 </style>
-""", unsafe_allow_html=True)
-
-# --- TÍTULO DE LA PÁGINA ---
-st.title("Galería de Gabinetes")
-st.markdown("<h3 style='text-align: center;'>Archivo de regalos simbólicos</h3><br>", unsafe_allow_html=True)
-
-# --- FUNCIÓN PARA CONECTAR Y LEER GOOGLE SHEETS ---
-@st.cache_data(ttl=60)
-def load_data():
-    try:
-        creds = st.secrets
-        sa = gspread.service_account_from_dict(creds)
-        spreadsheet = sa.open_by_url("https://docs.google.com/spreadsheets/d/1mLZEeMS0mxOXcPjy83-AtoHyXJ1M1pKDoICjM8iy20s/edit")
-        worksheet = spreadsheet.worksheet("Respuestas de formulario
+""",
