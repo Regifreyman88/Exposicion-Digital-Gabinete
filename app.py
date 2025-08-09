@@ -71,33 +71,32 @@ def load_data():
 df = load_data()
 
 if not df.empty:
-    # --- NOMBRES DE COLUMNA EXACTOS REVELADOS POR EL DIAGNÓSTICO ---
-    # Limpiamos los nombres de las columnas de espacios y saltos de línea
+    # Limpiamos los nombres de las columnas de espacios y caracteres invisibles
     df.columns = df.columns.str.strip()
-
+    
+    # --- VERIFICACIÓN FINAL DE COLUMNAS ---
+    required_columns = ["Nombre", "Titulo", "ImagenGabinete", "Descripcion"]
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    
+    if missing_columns:
+        st.error(f"Error Crítico: Faltan las siguientes columnas en tu Google Sheet: {missing_columns}")
+        st.info(f"Por favor, renombra los encabezados en tu Google Sheet para que coincidan EXACTAMENTE con estos nombres. Columnas encontradas: {list(df.columns)}")
+        st.stop()
+    
+    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
     COL_NOMBRE = "Nombre"
     COL_TITULO = "Titulo"
     COL_IMAGEN_GABINETE = "ImagenGabinete"
     COL_DESCRIPCION = "Descripcion"
-    
+
     # Filtrar filas donde el título y la imagen principal no están vacíos
     df_filtered = df[(df[COL_TITULO] != "") & (df[COL_IMAGEN_GABINETE] != "")].copy()
 
     if df_filtered.empty:
-        st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos en la hoja de cálculo.")
+        st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos.")
     else:
         st.markdown("---")
         num_columnas = 3
         cols = st.columns(num_columnas)
         
-        for index, row in df_filtered.iterrows():
-            with cols[index % num_columnas]:
-                gabinete_img_id = get_drive_id(row.get(COL_IMAGEN_GABINETE, ""))
-                titulo = row.get(COL_TITULO, "Sin Título")
-                nombre = row.get(COL_NOMBRE, "Anónimo")
-                descripcion = row.get(COL_DESCRIPCION, "No disponible")
-
-                st.markdown(f"""
-                <div class="gallery-card">
-                    <p class="gallery-title">{titulo}</p>
-                    <p class="gallery-author">Presentado por:
+        for index, row in df_filtered.iterrows
