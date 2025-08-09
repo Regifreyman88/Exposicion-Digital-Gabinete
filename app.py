@@ -1,4 +1,4 @@
-import streamlit as st
+  import streamlit as st
 import pandas as pd
 import base64
 import gspread
@@ -15,7 +15,6 @@ def get_img_as_base64(file):
             data = f.read()
         return base64.b64encode(data).decode()
     except FileNotFoundError:
-        st.warning(f"Advertencia: No se encontró la imagen de fondo '{file}'.")
         return None
 
 # --- FUNCIÓN PARA EXTRAER EL ID DE GOOGLE DRIVE ---
@@ -26,32 +25,36 @@ def get_drive_id(url):
 
 # --- APLICAR ESTILOS Y FONDO ---
 img_base64 = get_img_as_base64("portada_gabinete.jpg")
-if img_base64:
-    st.markdown(f"""
-    <style>
+st.markdown(f"""
+<style>
+    /* --- FONDO --- */
     [data-testid="stAppViewContainer"] > .main {{
         background-image: url("data:image/jpeg;base64,{img_base64}");
         background-size: cover; background-position: center;
         background-repeat: no-repeat; background-attachment: fixed;
     }}
-    .gallery-card {{
-        border: 2px solid #777; border-radius: 10px; padding: 15px;
-        background-color: rgba(30, 30, 30, 0.9);
-        box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.1);
-        margin-bottom: 20px; height: 100%;
+    /* --- CONTENEDOR DE CADA ENTRADA --- */
+    .entry-container {{
+        border: 2px solid #5a7a9a;
+        border-radius: 10px;
+        padding: 25px;
+        background-color: rgba(20, 30, 40, 0.92);
+        margin-bottom: 30px;
+        box-shadow: 0px 0px 20px 5px rgba(118, 202, 255, 0.2);
     }}
-    .gallery-title {{
-        font-size: 1.4em; font-weight: bold; color: #FFD700;
-        font-family: 'Georgia', serif;
+    /* --- TÍTULOS Y TEXTOS --- */
+    h1, h2, h3 {{ color: #FFFFFF; text-shadow: 2px 2px 4px #000000; }}
+    .entry-container h2 {{ color: #76CAFF; border-bottom: 2px solid #5a7a9a; padding-bottom: 5px; }}
+    .entry-container h3 {{ color: #FFFFFF; font-style: italic; }}
+    .stTabs [data-baseweb="tab"][aria-selected="true"] {{
+        background-color: #5a7a9a; color: white; font-weight: bold;
     }}
-    .gallery-author {{ font-style: italic; color: #CCCCCC; margin-bottom: 10px; }}
-    .gallery-img {{ width: 100%; border-radius: 5px; margin-bottom: 15px; }}
-    </style>
-    """, unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
-# --- TÍTULO ---
+# --- TÍTULO DE LA PÁGINA ---
 st.title("Galería de Gabinetes")
-st.markdown("<h3 style='text-align: center; color: #E0E0E0;'>Archivo de regalos simbólicos</h3><br>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>Archivo de regalos simbólicos</h3><br>", unsafe_allow_html=True)
 
 # --- FUNCIÓN PARA CONECTAR Y LEER GOOGLE SHEETS ---
 @st.cache_data(ttl=60)
@@ -73,45 +76,45 @@ df = load_data()
 if not df.empty:
     df.columns = df.columns.str.strip()
     
-    COL_NOMBRE = "Nombre"
-    COL_TITULO = "Titulo"
-    COL_IMAGEN_GABINETE = "ImagenGabinete"
-    COL_DESCRIPCION = "Descripcion"
-    
-    required_columns = [COL_NOMBRE, COL_TITULO, COL_IMAGEN_GABINETE]
+    # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
+    required_columns = ["Nombre", "Carrera", "Titulo", "ImagenGabinete", "Descripcion", "ImagenMuseo", "SolVerdad", "Audio", "Salas", "Pitch"]
     missing_columns = [col for col in required_columns if col not in df.columns]
-    
+
     if missing_columns:
-        st.error(f"Error Crítico: Faltan las siguientes columnas en tu Google Sheet: {missing_columns}")
-        st.info(f"Por favor, renombra los encabezados en tu Google Sheet. Columnas encontradas: {list(df.columns)}")
+        st.error(f"Error Crítico: Faltan columnas en tu Google Sheet: {missing_columns}")
         st.stop()
     
-    df_filtered = df[(df[COL_TITULO] != "") & (df[COL_IMAGEN_GABINETE] != "")].copy()
+    df_filtered = df[df["Titulo"] != ""].copy()
 
     if df_filtered.empty:
-        st.warning("No se encontraron gabinetes con un 'Titulo' y una 'ImagenGabinete' definidos.")
+        st.warning("No se encontraron gabinetes con un 'Titulo' definido.")
     else:
         st.markdown("---")
-        num_columnas = 3
-        cols = st.columns(num_columnas)
         
+        # --- RENDERIZAR CADA GABINETE COMO UN DOSSIER COMPLETO ---
         for index, row in df_filtered.iterrows():
-            with cols[index % num_columnas]:
-                gabinete_img_id = get_drive_id(row.get(COL_IMAGEN_GABINETE, ""))
-                titulo = row.get(COL_TITULO, "Sin Título")
-                nombre = row.get(COL_NOMBRE, "Anónimo")
-                descripcion = row.get(COL_DESCRIPCION, "No disponible")
-
-                st.markdown(f"""
-                <div class="gallery-card">
-                    <p class="gallery-title">{titulo}</p>
-                    <p class="gallery-author">Presentado por: {nombre}</p>
-                    <img class="gallery-img" src="https://drive.google.com/uc?id={gabinete_img_id}" alt="{titulo}">
-                    <details>
-                        <summary>Ver más detalles</summary>
-                        <p><strong>Artefacto Central:</strong> {descripcion}</p>
-                    </details>
-                </div>
-                """, unsafe_allow_html=True)
-else:
-    st.warning("No se encontraron datos en la hoja de cálculo o hubo un error al cargar.")
+            with st.container():
+                st.markdown('<div class="entry-container">', unsafe_allow_html=True)
+                
+                # Encabezado
+                st.header(row.get("Titulo", "Sin Título"))
+                st.caption(f"Evidencia presentada por: {row.get('Nombre', 'Anónimo')} ({row.get('Carrera', 'N/A')})")
+                st.markdown("---")
+                
+                # Columnas para imagen principal y artefacto
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.subheader("Mi Gabinete")
+                    gabinete_img_id = get_drive_id(row.get("ImagenGabinete", ""))
+                    if gabinete_img_id:
+                        st.image(f"https://drive.google.com/uc?id={gabinete_img_id}", use_container_width=True)
+                
+                with col2:
+                    st.subheader("El Artefacto Central")
+                    st.write(row.get("Descripcion", "No disponible"))
+                    
+                    st.subheader("Objeto del Museo")
+                    museo_img_id = get_drive_id(row.get("ImagenMuseo", ""))
+                    if museo_img_id:
+                        st
