@@ -5,7 +5,7 @@ import base64
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(
     page_title="Bitácora del Asombro",
-    page_icon=" Mysteries",
+    page_icon="🖼️",
     layout="wide"
 )
 
@@ -22,7 +22,7 @@ def get_drive_id(url):
         return url.split('=')[1]
     return ""
 
-# --- CARGA DE LA IMAGEN Y DEFINICIÓN DEL CSS ---
+# --- CARGA DE LA IMAGEN DE FONDO Y CSS ---
 try:
     img_path = "portada_gabinete.jpg"
     img_base64 = get_img_as_base64(img_path)
@@ -35,10 +35,38 @@ try:
         background-repeat: no-repeat;
         background-attachment: fixed;
     }}
-    .cover-image {{
-        width: 100%;
+    .gallery-card {{
+        border: 2px solid #777;
         border-radius: 10px;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        background-color: rgba(30, 30, 30, 0.9);
+        box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.1);
+        margin-bottom: 20px;
+        height: 100%;
+    }}
+    .gallery-title {{
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #FFD700; /* Color dorado para el título */
+        font-family: 'Georgia', serif;
+    }}
+    .gallery-author {{
+        font-style: italic;
+        color: #CCCCCC;
+        margin-bottom: 10px;
+    }}
+    .gallery-img {{
+        width: 100%;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }}
+    .decorative-img {{
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        float: right;
+        border: 2px solid #FFD700;
     }}
     </style>
     """
@@ -48,66 +76,27 @@ except FileNotFoundError:
     st.stop()
 
 # --- TÍTULO DE LA EXPOSICIÓN ---
-st.title("Mi Gabinete")
+st.title("Galería de Gabinetes")
 st.markdown("<h3 style='text-align: center; color: #E0E0E0; font-family: Courier New, monospace;'>Archivo de regalos simbólicos ofrecidos al Asombro en tránsito</h3><br>", unsafe_allow_html=True)
 
-# --- CARGAR LOS DATOS DESDE GOOGLE SHEETS ---
+# --- CARGAR LOS DATOS ---
 SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQA-RtFzjQk1Fa8rFpMDrF2NKYVwyliJhhXd6vduGnbmIoggbL7KOyJkaxIKh5AUcJM9sxzBExOgnHX/pub?gid=562854143&single=true&output=csv"
 
 try:
     df = pd.read_csv(SHEET_URL)
-
-    # --- PASO DE DIAGNÓSTICO: MOSTRAR LOS NOMBRES DE COLUMNA REALES ---
-    st.write("Nombres de columna leídos desde el archivo:")
-    st.write(df.columns)
-    # --- FIN DEL PASO DE DIAGNÓSTICO ---
+    if df.empty:
+        st.error("Error Crítico: El archivo CSV leído desde Google Sheets está vacío.")
+        st.stop()
 
     # --- NOMBRES DE COLUMNA SIMPLIFICADOS ---
     COL_NOMBRE = "Nombre"
-    COL_CARRERA = "Carrera"
-    COL_IMAGEN_MUSEO = "ImagenMuseo"
-    COL_SOL_VERDAD = "SolVerdad"
     COL_TITULO = "Titulo"
-    COL_AUDIO = "Audio"
-    COL_SALAS = "Salas"
-    COL_DESCRIPCION = "Descripcion"
-    COL_PITCH = "Pitch"
-    COL_IMAGEN_GABINETE = "ImagenGabinete" # Este es el que causa el error.
+    COL_IMAGEN_GABINETE = "ImagenGabinete"
 
-    # --- RENDERIZAR LA GALERÍA DE PORTADAS ---
-    num_columnas = 3
-    cols = st.columns(num_columnas)
-
-    for index, row in df.iterrows():
-        col = cols[index % num_columnas]
-        
-        gabinete_img_id = get_drive_id(row[COL_IMAGEN_GABINETE])
-        museo_img_id = get_drive_id(row[COL_IMAGEN_MUSEO])
-        audio_id = get_drive_id(row[COL_AUDIO])
-
-        with col:
-            st.image(f"https://drive.google.com/uc?id={gabinete_img_id}", use_column_width=True, caption=row[COL_TITULO])
-            with st.expander("Ver detalles de la colección"):
-                st.subheader(row[COL_TITULO])
-                st.caption(f"Presentado por: {row[COL_NOMBRE]} ({row[COL_CARRERA]})")
-                if audio_id:
-                    st.audio(f"https://drive.google.com/uc?id={audio_id}", format='audio/wav')
-                tab1, tab2, tab3 = st.tabs(["El Artefacto", "La Revelación", "Las Salas"])
-                with tab1:
-                    st.write("**Descripción del Artefacto Central:**")
-                    st.write(row[COL_DESCRIPCION])
-                    if museo_img_id:
-                        st.image(f"https://drive.google.com/uc?id={museo_img_id}", use_column_width=True, caption="Objeto del Museo")
-                with tab2:
-                    st.write("**El 'Sol' de la Verdad:**")
-                    st.write(row[COL_SOL_VERDAD])
-                    st.write("---")
-                    st.write("**El Pitch:**")
-                    st.write(row[COL_PITCH])
-                with tab3:
-                    st.write("**Las Salas del Gabinete:**")
-                    st.write(row[COL_SALAS])
-
-except Exception as e:
-    st.error(f"Error al cargar o procesar los datos: {e}")
-    st.warning("Verifica que el enlace de tu Google Sheet esté publicado como CSV y que los nombres de las columnas en el archivo coincidan con los del código.")
+    # Lista de imágenes decorativas (pinturas famosas)
+    decorative_images = [
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg", # Mona Lisa
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg/600px-Vincent_van_Gogh_-_The_Starry_Night_-_Google_Art_Project.jpg", # Starry Night
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/The_Persistence_of_Memory.jpg/640px-The_Persistence_of_Memory.jpg", # The Persistence of Memory
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/The_Scream.jpg/499px-The_Scream.jpg", # The Scream
+        "
