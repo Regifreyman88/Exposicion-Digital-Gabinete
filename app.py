@@ -85,7 +85,6 @@ try:
     df = pd.read_csv(SHEET_URL)
 
     # --- NOMBRES DE LAS COLUMNAS DE TU ARCHIVO CSV ---
-    # Se ha actualizado el nombre de la columna a "Metáfora central"
     COL_CARRERA = "Carrera"
     COL_TITULO = "Metáfora central"
     COL_DESC = "El artefacto central: Describe el único objeto, real o imaginado, que está en el corazón de tu Gabinete."
@@ -115,3 +114,9 @@ try:
             """, unsafe_allow_html=True)
 
 except KeyError as e:
+    # Esta sección ahora está correctamente indentada
+    st.error(f"Error de Columna: No se encontró la columna {e}. Esto significa que un encabezado en el código todavía no coincide con tu archivo CSV.")
+except Exception as e:
+    # Esta sección ahora está correctamente indentada
+    st.error(f"Error al cargar o procesar los datos de la bitácora: {e}")
+    st.warning("Verifica que el enlace del Google Sheet sea correcto y esté publicado como CSV.")
